@@ -1,7 +1,14 @@
 # Issue #001 — Buscar skill de tipo "construcción de agente OpenClaw"
 
-**Estado:** abierto
+**Estado:** parcialmente resuelto (runbook creado; falta convertirlo en skill)
 **Prioridad:** alta
+
+## Actualización 2026-08-08
+
+Creado el runbook ejecutable [`knowledge/onboarding-cliente.md`](../knowledge/onboarding-cliente.md)
+(de cero a bot vivo: crear agente → personalidad → canal → binding → smoke test). Esto cubre el
+"cómo" que faltaba. **Pendiente**: convertirlo en un tercer skill `openclaw-agent-build` disparable
+(recomendación #3 de Álvaro).
 **Creado:** 2026-08-08
 
 ## Descripción

@@ -3,6 +3,9 @@
 Índice del conocimiento acumulado sobre **cómo construir y configurar OpenClaw** para clientes.
 Rol: arquitecto de OpenClaw (no es OpenClaw). Vive en el proyecto `/openclaw`.
 
+> 🚪 **Empieza por [`AGENTS.md`](./AGENTS.md)** (protocolo de arranque del agente).
+> 🎯 **Tarea más común**: crear un bot para un cliente → [`knowledge/onboarding-cliente.md`](./knowledge/onboarding-cliente.md).
+
 Todos los conceptos y decisiones de arquitectura que hemos tocado, con dónde profundizar.
 
 ## 1. Arquitectura multi-cliente de OpenClaw
