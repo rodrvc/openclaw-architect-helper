@@ -44,7 +44,7 @@ Responder con el usuario:
 ## Paso 2 — Crear el agente
 
 ```bash
-create agent llantas workspace /Users/rodrigodev/.openclaw/agents/llantas/workspace model openai/gpt-5.5
+create agent llantas workspace ~/.openclaw/agents/llantas/workspace model openai/gpt-5.5
 ```
 Cada agente = workspace + agentDir + session store propios (aislado de otros agentes).
 Verificar:

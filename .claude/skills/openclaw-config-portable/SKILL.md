@@ -38,7 +38,8 @@ genera un prompt de traspaso para el agente que instalará todo en la máquina d
 Confirma la ruta del state dir (default `~/.openclaw/`, o `OPENCLAW_STATE_DIR`/`--profile`).
 Verifica que existe `openclaw.json` y `workspace/`.
 
-### Paso 1 — Auditar secretos ANTES de empaquetar
+### Paso 1 — Auditar secretos ANTES de empaquetar (GATE BLOQUEANTE — HARD STOP)
+
 El `openclaw.json` puede tener secretos en texto plano (ej. `gateway.auth.token`) y PII
 (teléfonos en `channels.whatsapp.allowFrom`, `auth.profiles.*.email`).
 
@@ -46,20 +47,124 @@ El `openclaw.json` puede tener secretos en texto plano (ej. `gateway.auth.token`
 openclaw secrets audit --check   # exit 0 = limpio; 1 = plaintext; 2 = refs sin resolver
 ```
 
-Si hay plaintext, NO empaquetes el JSON tal cual. Propón moverlo a SecretRef primero:
+**Este paso es un GATE, no una advertencia.** Evalúa el exit code ANTES de tocar el Paso 2:
+
+- **`exit 0`** → limpio, puedes continuar al Paso 2 copiando `openclaw.json` tal cual.
+- **`exit != 0`** (1 = plaintext, 2 = refs sin resolver) → **DETENTE AQUÍ.** Está PROHIBIDO
+  ejecutar `cp ~/.openclaw/openclaw.json` en el Paso 2 mientras el audit no salga limpio.
+  No hay excepción "solo por esta vez" ni "ya avisé al usuario": si el JSON tiene un secreto
+  en claro, NO se empaqueta el original, punto. Ve al Paso 1.1 para sanitizar una COPIA.
+
+Este gate existe porque un agente apurado podría auditar, ver plaintext, y copiar igual
+"solo con una advertencia" — eso es exactamente lo que causó el issue #002
+(`gateway.auth.token` en texto plano llegó a versionarse). No repitas ese error.
+
+#### Paso 1.1 — Sanitizar la COPIA (solo si el audit falló)
+
+**Nunca edites el `openclaw.json` original del state dir.** Trabaja siempre sobre una copia
+en el directorio de salida, reemplazando las claves sensibles conocidas por SecretRefs
+(`${ENV_VAR}`) y moviendo el valor real a un `.env` fuera de git.
+
 ```bash
-openclaw config set gateway.auth.token --ref-provider default --ref-source env --ref-id OPENCLAW_GATEWAY_TOKEN --dry-run
+OUT=./openclaw-config-portable
+mkdir -p "$OUT/workspace"
+cp ~/.openclaw/openclaw.json "$OUT/openclaw.json"   # copia de trabajo, se sanitiza en el mismo lugar
 ```
-Registra los nombres de las env vars necesarias para el `.env.example` (sin valores).
+
+Sanitiza la copia con un script inline de `python3` (lee el JSON, reemplaza las claves
+sensibles conocidas por su referencia de env var, y escribe el valor real aparte en un
+`.env` gitignored — nunca en el JSON versionado):
+
+```bash
+python3 - "$OUT/openclaw.json" "$OUT/.env" <<'PYEOF'
+import json, sys
+
+json_path, env_path = sys.argv[1], sys.argv[2]
+
+with open(json_path) as f:
+    cfg = json.load(f)
+
+# Mapa: ruta punteada dentro del JSON -> nombre de env var a usar como SecretRef.
+# Ampliar esta lista si `openclaw secrets audit --check` reporta otras claves en claro.
+SENSITIVE_KEYS = {
+    ("gateway", "auth", "token"): "OPENCLAW_GATEWAY_TOKEN",
+}
+
+def get_in(d, path):
+    for k in path:
+        if not isinstance(d, dict) or k not in d:
+            return None
+        d = d[k]
+    return d
+
+def set_in(d, path, value):
+    for k in path[:-1]:
+        d = d.setdefault(k, {})
+    d[path[-1]] = value
+
+secrets_found = {}
+for path, env_name in SENSITIVE_KEYS.items():
+    value = get_in(cfg, path)
+    if isinstance(value, str) and value and not value.startswith("${"):
+        secrets_found[env_name] = value
+        set_in(cfg, path, "${%s}" % env_name)
+
+with open(json_path, "w") as f:
+    json.dump(cfg, f, indent=2)
+    f.write("\n")
+
+if secrets_found:
+    with open(env_path, "a") as f:
+        for env_name, value in secrets_found.items():
+            f.write(f"{env_name}={value}\n")
+    print(f"Sanitizados {len(secrets_found)} secreto(s) -> {env_path} (NO versionar este archivo)")
+else:
+    print("No se encontraron valores en claro para las claves conocidas; revisa el audit manualmente.")
+PYEOF
+```
+
+Alternativa equivalente con `jq` si se prefiere evitar python3 (solo cubre `gateway.auth.token`;
+para más claves, repetir el patrón):
+
+```bash
+TOKEN=$(jq -r '.gateway.auth.token' "$OUT/openclaw.json")
+if [ -n "$TOKEN" ] && [ "$TOKEN" != "null" ] && [[ "$TOKEN" != '${'* ]]; then
+  jq '.gateway.auth.token = "${OPENCLAW_GATEWAY_TOKEN}"' "$OUT/openclaw.json" > "$OUT/openclaw.json.tmp" \
+    && mv "$OUT/openclaw.json.tmp" "$OUT/openclaw.json"
+  echo "OPENCLAW_GATEWAY_TOKEN=$TOKEN" >> "$OUT/.env"
+fi
+```
+
+Después de sanitizar, **re-corre el audit sobre la copia** antes de seguir:
+```bash
+openclaw secrets audit --check --config "$OUT/openclaw.json"
+```
+Si sigue marcando plaintext (p. ej. otra clave no cubierta por `SENSITIVE_KEYS`), añade esa
+clave al mapa y repite. NO avances al Paso 3 hasta que este audit sobre la copia salga limpio.
+
+Registra en `$OUT/.env.example` los NOMBRES de las env vars usadas (sin valores reales — ver
+Paso 2). El `$OUT/.env` con los valores reales NUNCA se versiona (ya está en `.gitignore`,
+ver Paso 2).
 
 ### Paso 2 — Crear el paquete portable
-Crea un directorio de salida (por defecto un repo git) y copia SOLO lo ligero:
+Si el audit del Paso 1 salió limpio directamente (exit 0), crea el directorio de salida y
+copia lo ligero (incluido `openclaw.json` tal cual, sin pasar por el Paso 1.1):
 
 ```bash
 OUT=./openclaw-config-portable
 mkdir -p "$OUT/workspace"
 cp ~/.openclaw/openclaw.json "$OUT/openclaw.json"
 # archivos de personalidad y memoria (los que existan):
+cp ~/.openclaw/workspace/*.md "$OUT/workspace/" 2>/dev/null || true
+cp -R ~/.openclaw/workspace/memory "$OUT/workspace/memory" 2>/dev/null || true
+cp -R ~/.openclaw/workspace/skills "$OUT/workspace/skills" 2>/dev/null || true
+```
+
+Si en cambio el audit falló y pasaste por el Paso 1.1, `$OUT/openclaw.json` YA es la copia
+sanitizada (no la vuelvas a copiar desde `~/.openclaw/`, la sobrescribirías con la versión en
+claro). Solo copia el resto:
+
+```bash
 cp ~/.openclaw/workspace/*.md "$OUT/workspace/" 2>/dev/null || true
 cp -R ~/.openclaw/workspace/memory "$OUT/workspace/memory" 2>/dev/null || true
 cp -R ~/.openclaw/workspace/skills "$OUT/workspace/skills" 2>/dev/null || true
@@ -91,15 +196,41 @@ obviamente falsos, nunca prefijos reales tipo `sk-`/`xoxb-`):
 OPENCLAW_GATEWAY_TOKEN=example-token-not-real
 ```
 
-### Paso 3 — Revisar PII
-Antes de versionar, revisa `openclaw.json` y `USER.md`/`MEMORY.md` por PII (teléfonos, emails).
-Si el destino es un repo compartido, considera mover la PII a un `$include` no versionado o placeholders.
+### Paso 3 — Revisar PII (advertir y ofrecer sanitizar, no es un gate automático)
+
+`openclaw secrets audit --check` audita **secretos** (tokens, API keys), no PII. La PII no
+hace fallar el audit pero igual es sensible — revísala explícitamente antes de versionar:
+
+- `auth.profiles.*.email` en `openclaw.json` → email del usuario.
+- `channels.whatsapp.allowFrom[]` / `groupAllowFrom[]` en `openclaw.json` → teléfonos.
+- `bindings[].match.peer.id` en `openclaw.json` → teléfonos / ID de grupo WhatsApp.
+- `USER.md` / `MEMORY.md` → puede contener nombre completo, email, teléfono, dirección, etc.
+
+Detecta rápido con grep sobre la copia ya sanitizada (no el original):
+```bash
+grep -nE '"email"\s*:|allowFrom|groupAllowFrom|peer' "$OUT/openclaw.json"
+grep -nEi '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}|\+?[0-9]{8,}' "$OUT/workspace"/*.md 2>/dev/null
+```
+
+Si encuentras PII y el destino es un repo compartido (o público):
+- **Ofrece sanitizar** antes de continuar — no lo hagas en silencio ni lo dejes pasar sin
+  preguntar. Opciones a proponer al usuario:
+  - Reemplazar el valor por un placeholder obvio en la copia (`"email": "user@example.com"`,
+    `"allowFrom": ["+00000000000"]`).
+  - Extraer la PII a un archivo no versionado (`workspace/private.md` o similar) referenciado
+    vía `$include` desde el `.md`/JSON principal, y añadirlo al `.gitignore`.
+- Si el usuario confirma que el repo es privado y de un solo dueño, puedes dejar la PII tal
+  cual, pero deja constancia en `HANDOFF.md` de qué PII quedó incluida.
+- A diferencia del Paso 1 (secretos), este paso **no aborta automáticamente** el empaquetado —
+  requiere una decisión del usuario. Pero no omitas la advertencia: preguntar es obligatorio.
 
 ### Paso 4 — Verificar e inicializar git
 ```bash
 cd "$OUT" && git init -q && git add -A && git status
 ```
-Confirma que NO se coló ningún secreto (revisa `git status` y el diff).
+Confirma que NO se coló ningún secreto: `.env` no debe aparecer en `git status` (lo bloquea
+el `.gitignore` del Paso 2), y `grep` sobre `git diff --cached -- openclaw.json` no debe
+mostrar valores en claro para las `SENSITIVE_KEYS` del Paso 1.1 — solo `${ENV_VAR}`.
 
 ### Paso 5 — Generar el PROMPT DE TRASPASO
 Escribe `$OUT/HANDOFF.md` con el prompt para el próximo agente (ver plantilla abajo).

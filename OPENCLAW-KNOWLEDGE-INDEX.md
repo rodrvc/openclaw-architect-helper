@@ -6,6 +6,22 @@ Rol: arquitecto de OpenClaw (no es OpenClaw). Vive en el proyecto `/openclaw`.
 > 🚪 **Empieza por [`AGENTS.md`](./AGENTS.md)** (protocolo de arranque del agente).
 > 🎯 **Tarea más común**: crear un bot para un cliente → [`knowledge/onboarding-cliente.md`](./knowledge/onboarding-cliente.md).
 
+## 0. Mapa por tarea — "quiero hacer X"
+
+Punto de entrada rápido por intención, además de la organización temática de abajo (secciones 1-11).
+Para cada tarea: qué doc leer primero y qué skill usar (si aplica).
+
+| Quiero... | Leo primero | Uso este skill |
+|---|---|---|
+| **Crear un bot nuevo para un cliente** (de cero a bot vivo) | [`knowledge/onboarding-cliente.md`](./knowledge/onboarding-cliente.md) — runbook paso a paso | `openclaw-agent-build` *(en construcción, ver sección 11)* |
+| **Elegir cómo conectar WhatsApp** (QR vs BSP vs Cloud API) | [`knowledge/openclaw.md`](./knowledge/openclaw.md#whatsapp-opciones-de-conexión) para las opciones; [`research/whatsapp-official-imbee.md`](./research/whatsapp-official-imbee.md) si el cliente desconfía y no da claves Meta | — (ver árbol de decisión en `onboarding-cliente.md` Paso 4) |
+| **Versionar o mover la config a git de forma segura** | [`knowledge/config-management.md`](./knowledge/config-management.md) — SecretRef, `.gitignore`, `$include` | `openclaw-config-portable` (export ligero, sin secretos) |
+| **Importar una config a otro OpenClaw ya existente** | [`knowledge/config-management.md`](./knowledge/config-management.md) + `HANDOFF.md` generado por el export | `openclaw-config-import` (detecta conflictos, pregunta, no aplica sin confirmar) |
+| **Mudar toda la instancia a otra máquina** (DR / mudanza total, con secretos) | [`knowledge/moving-openclaw.md`](./knowledge/moving-openclaw.md) — opción (A) | — (usar `openclaw backup create --verify`, no los skills ligeros) |
+| **Decidir local (Mac) vs VPS 24/7** | [`knowledge/local-vs-remote-gateway.md`](./knowledge/local-vs-remote-gateway.md) | — |
+| **Entender la arquitectura general** (capas, memoria, multi-agente) | [`knowledge/openclaw.md`](./knowledge/openclaw.md#arquitectura-en-3-capas) | — |
+| **Entender memoria, automatización (cron/hooks/standing orders), skills, seguridad** | [`knowledge/openclaw-features.md`](./knowledge/openclaw-features.md) | — |
+
 Todos los conceptos y decisiones de arquitectura que hemos tocado, con dónde profundizar.
 
 ## 1. Arquitectura multi-cliente de OpenClaw
@@ -103,10 +119,12 @@ Skills de Claude Code versionadas en este repo (`.claude/skills/`):
 
 - **`openclaw-config-portable`** (export) — prepara un paquete ligero y portable de config + personalidad de OpenClaw (sin secretos) y genera un prompt de traspaso (`HANDOFF.md`). Resuelve el "no quiero mover todo el proyecto gigante".
 - **`openclaw-config-import`** (import) — instala ese paquete ligero en un OpenClaw YA EXISTENTE: respalda con el backup oficial, detecta conflictos y pregunta caso a caso (merge/reemplazar/omitir), prepara el plan y NO aplica hasta que el usuario confirme.
+- **`openclaw-agent-build`** *(en construcción)* — sistematiza la creación de un agente por negocio (workspace, personalidad, canal, binding, control de acceso) siguiendo el runbook de `knowledge/onboarding-cliente.md`. Resuelve el issue #001.
 
-**Nota:** para restauración total de una instancia (DR) existe el **backup OFICIAL** `openclaw backup create --verify` (pesado, con secretos). Los dos skills de arriba son el flujo **ligero** export↔import.
+**Nota:** para restauración total de una instancia (DR) existe el **backup OFICIAL** `openclaw backup create --verify` (pesado, con secretos). Los dos skills de config son el flujo **ligero** export↔import; `openclaw-agent-build` es un flujo distinto (construcción, no migración).
 
 ## 11. Pendientes / issues
 
 - [`issues/001-buscar-skill-construccion-agente-openclaw.md`](./issues/001-buscar-skill-construccion-agente-openclaw.md)
-- [`issues/002-token-gateway-en-texto-plano.md`](./issues/002-token-gateway-en-texto-plano.md) — ⚠️ seguridad
+  — **parcialmente resuelto**: el runbook [`knowledge/onboarding-cliente.md`](./knowledge/onboarding-cliente.md) ya cubre el "cómo". Pendiente convertirlo en la skill disparable `openclaw-agent-build`.
+- [`issues/002-token-gateway-en-texto-plano.md`](./issues/002-token-gateway-en-texto-plano.md) — ⚠️ seguridad, **abierto pero en proceso**: el skill `openclaw-config-portable` ya implementa un hard-stop (Paso 1: audita secretos con `openclaw secrets audit --check` y se niega a empaquetar el JSON si hay plaintext), lo que evita que el token se filtre al versionar. Falta aplicar la solución de fondo (mover `gateway.auth.token` a SecretRef) sobre la instancia real.
