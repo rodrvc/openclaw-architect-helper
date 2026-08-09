@@ -1,0 +1,18 @@
+# El paquete portable es su PROPIO repo git (con su .env/secretos) — no versionar aquí
+# (ancla a la raíz con "/" para NO ignorar el skill de export en .claude/skills/)
+/openclaw-config-portable/
+
+# Defensa en profundidad: nunca versionar secretos/estado de OpenClaw
+.env
+*.env
+!*.env.example
+secrets.json
+secrets/
+auth.json
+auth-profiles.json
+*openclaw-backup.tar.gz
+*.sqlite*
+credentials/
+identity/
+devices/
+node_modules/
