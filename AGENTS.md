@@ -84,7 +84,7 @@ Ver [`knowledge/patron-workers-delegacion.md`](./knowledge/patron-workers-delega
 
 Antes de tocar la flota lee **[`issues/003-optimizacion-pendientes-decision.md`](./issues/003-optimizacion-pendientes-decision.md)**
 → sección "Estado al …": qué está hecho, la regla operativa (exportar la flota al repo privado tras cada
-cambio) y el orden de lo que sigue. Es el único punto de continuidad entre sesiones; actualízalo al terminar.
+cambio) y el orden de lo que sigue. Es el único punto de continuidad entre sesiones; **actualiza ese mismo archivo al terminar** (mueve lo hecho a "Hecho", reordena "Siguiente"). No abras un issue nuevo por sesión: los `issues/NNN` nuevos son solo para problemas puntuales descubiertos, no para el estado.
 
 ## Al terminar una tarea
 
