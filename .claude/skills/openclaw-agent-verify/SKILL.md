@@ -58,7 +58,7 @@ mover el binding de `main` **afecta a todos los agentes**.
 
 ## Mapa del equipo
 
-`~/.openclaw/architect/mapa-equipo.md (FUERA del repo: contiene teléfonos y JIDs)` guarda quién es quién: agente, canal, grupo o número, propósito y
+`<repo privado de la flota>/mapa-equipo.md (p. ej. ~/projects/openclaw-fleet-rodrigo) (FUERA del repo: contiene teléfonos y JIDs)` guarda quién es quién: agente, canal, grupo o número, propósito y
 notas. La config sabe *que* existe un binding a `<jid-del-grupo>@g.us`, pero no que ese
 grupo es "el de adondepo donde escribe tal persona" — eso es lo que este archivo conserva.
 
@@ -85,7 +85,7 @@ compartido sin revisarlo (`openclaw secrets audit --check` no cubre PII).
 - [ ] Responde con el tono de su `SOUL.md` (no el genérico del template).
 - [ ] Si habla con terceros: lockdown aplicado y contención verificada
       (ver paso 6.5 de `openclaw-agent-build`).
-- [ ] Fila agregada en `~/.openclaw/architect/mapa-equipo.md (FUERA del repo: contiene teléfonos y JIDs)`.
+- [ ] Fila agregada en `<repo privado de la flota>/mapa-equipo.md (p. ej. ~/projects/openclaw-fleet-rodrigo) (FUERA del repo: contiene teléfonos y JIDs)`.
 - [ ] Si editaste `SOUL.md`/`AGENTS.md`/`USER.md`: `openclaw gateway restart` (se cargan al
       iniciar sesión; las sesiones vivas conservan la versión anterior).
 
