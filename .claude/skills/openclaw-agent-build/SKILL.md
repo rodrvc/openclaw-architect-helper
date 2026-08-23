@@ -142,6 +142,11 @@ número → confirma memoria independiente. Si no responde:
 `openclaw channels status --probe` y `openclaw logs --follow`.
 
 ### Paso 8 — Checklist de verificación final
+
+> Atajo: el skill **`openclaw-agent-verify`** automatiza buena parte de esto
+> (`scripts/verify_agents.py <id>`) y mantiene el mapa del equipo. Ojo: el chequeo es
+> estático — la prueba de routing real (escribir desde WhatsApp y ver qué sesión atiende)
+> sigue siendo manual, y `openclaw agent --to` NO sirve para eso: siempre resuelve a `main`.
 - [ ] `openclaw status` muestra agente + canal enlazados.
 - [ ] `openclaw channels status --probe` = linked/healthy.
 - [ ] Responde desde un teléfono externo, con el tono de SOUL.md.

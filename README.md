@@ -2,9 +2,13 @@
 
 > **Qué es:** un proyecto **Claude arquitecto de OpenClaw**. Sirve para **construir y
 > configurar** instancias de OpenClaw para clientes.
-> **Qué NO es:** NO es OpenClaw, NO es un workspace de OpenClaw, NO trabaja como OpenClaw.
-> El OpenClaw que funciona vive en `~/.openclaw/` (binario en `/opt/homebrew/`); este repo
-> solo lo estudia, documenta y configura.
+> **Qué NO es:** NO es OpenClaw ni un workspace de OpenClaw. El OpenClaw que funciona vive
+> en `~/.openclaw/` (binario en `/opt/homebrew/`); este repo lo estudia, documenta y configura.
+>
+> **Dos lectores:** Claude Code trabajando en el repo *documenta* (prepara comandos, el
+> usuario los corre). El agente `main` (🧭 Lumen) de OpenClaw además *opera* la instancia
+> vía la skill `openclaw-architect`, con respaldo y confirmación para todo lo que escribe.
+> Ver `AGENTS.md` → "Dos lectores, dos alcances".
 
 ## Estructura
 
@@ -15,6 +19,7 @@
 | [`research/`](./research/) | Investigaciones puntuales (ej. plugin WhatsApp imBee) |
 | [`issues/`](./issues/) | Pendientes/tareas del proyecto |
 | [`.claude/skills/`](./.claude/skills/) | Skills de Claude Code del arquitecto (export/import de config) |
+| [`scripts/`](./scripts/) | Guardarraíles ejecutables (`check-prompt-budget.sh`: techo de bytes de arranque por agente) |
 
 ## Skills incluidas
 
@@ -25,7 +30,8 @@
 
 1. Toda información relevante de OpenClaw se registra en `knowledge/` (con su fuente).
 2. No llenar con info no verificada; agregar a medida que se confirma.
-3. Este proyecto es de arquitectura/conocimiento; **no ejecuta OpenClaw**.
+3. Este proyecto es de arquitectura/conocimiento. Quien lo *documenta* no ejecuta OpenClaw;
+   `main` sí opera la instancia, con las reglas de `AGENTS.md`.
 4. Nunca versionar secretos (ver `.gitignore`).
 
 > Nota: `openclaw-config-portable/` (el paquete generado) es su propio repo git y está

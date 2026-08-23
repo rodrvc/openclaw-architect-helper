@@ -19,7 +19,9 @@ Para cada tarea: qué doc leer primero y qué skill usar (si aplica).
 | **Importar una config a otro OpenClaw ya existente** | [`knowledge/config-management.md`](./knowledge/config-management.md) + `HANDOFF.md` generado por el export | `openclaw-config-import` (detecta conflictos, pregunta, no aplica sin confirmar) |
 | **Mudar toda la instancia a otra máquina** (DR / mudanza total, con secretos) | [`knowledge/moving-openclaw.md`](./knowledge/moving-openclaw.md) — opción (A) | — (usar `openclaw backup create --verify`, no los skills ligeros) |
 | **Decidir local (Mac) vs VPS 24/7** | [`knowledge/local-vs-remote-gateway.md`](./knowledge/local-vs-remote-gateway.md) | — |
+| **Verificar que un agente quedó bien montado** / saber qué grupo es cuál | [`skills/openclaw-agent-verify`](./.claude/skills/openclaw-agent-verify/SKILL.md) + el mapa del equipo en su `reference/` | `openclaw-agent-verify` |
 | **Depurar un agente que responde raro** (genérico, ignora instrucciones) | [`knowledge/depurar-agentes.md`](./knowledge/depurar-agentes.md) — dónde vive su comportamiento real, determinismo por código, verificar antes de concluir | — |
+| **Bajar el consumo de tokens / decidir qué modelo o agente hace cada tarea** | [`knowledge/optimizacion-tokens.md`](./knowledge/optimizacion-tokens.md) (informe + guardarraíles) · [`knowledge/patron-workers-delegacion.md`](./knowledge/patron-workers-delegacion.md) (matriz de enrutamiento, explorador, ACP/Orca, feedback WhatsApp) | `scripts/check-prompt-budget.sh`; skill `delegar-a-claude` (workspace de main) |
 | **Entender la arquitectura general** (capas, memoria, multi-agente) | [`knowledge/openclaw.md`](./knowledge/openclaw.md#arquitectura-en-3-capas) | — |
 | **Entender memoria, automatización (cron/hooks/standing orders), skills, seguridad** | [`knowledge/openclaw-features.md`](./knowledge/openclaw-features.md) | — |
 
