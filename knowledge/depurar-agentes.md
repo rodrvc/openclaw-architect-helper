@@ -119,3 +119,9 @@ Cuando un agente responde raro:
 - [`onboarding-cliente.md`](./onboarding-cliente.md) — montar un agente de cero (paso 3: escribir la personalidad).
 - [`openclaw-features.md`](./openclaw-features.md) — memoria, skills, automatización.
 - Skill `openclaw-agent-build` — secuencia accionable de onboarding.
+
+## Caso: agente nuevo que responde "Soy Codex…" (2026-08-23)
+
+La primera sesión se creó antes de escribir el SOUL (o con el `BOOTSTRAP.md`/plantillas que deja `agents add`)
+y quedó con el prompt genérico; una sesión nueva (`--session-id`) ya respondía con la personalidad.
+Fix: mover `agents/<id>/sessions/` aparte y probar de nuevo. Regla: personalidad primero, conversación después.

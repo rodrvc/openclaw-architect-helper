@@ -110,6 +110,11 @@ Mide: `scripts/check-prompt-budget.sh` (techos por tipo) antes de conectar el ca
 
 Breve y concreto. Prueba el tono en consola **antes** de conectar el canal.
 
+⚠️ **Orden importa:** escribe SOUL/IDENTITY/PROJECT **antes** de la primera conversación con el agente.
+Si ya hablaste con él (o `agents add` dejó un `BOOTSTRAP.md`/plantillas y probaste), la sesión `main`
+queda con la personalidad genérica ("Soy Codex…"): borra `BOOTSTRAP.md`, mueve
+`~/.openclaw/agents/<id>/sessions/` aparte y vuelve a probar (visto 2026-08-23 con `opportunity-finder`).
+
 ### Paso 4 — Elegir y conectar el canal (árbol de decisión) — CONFIRMAR
 ```
 ¿demo/validación?  ──SÍ──►  A) QR / Baileys (gratis, rápido; riesgo ban; número de PRUEBA)
