@@ -18,8 +18,11 @@ Para cada tarea: qué doc leer primero y qué skill usar (si aplica).
 | **Versionar o mover la config a git de forma segura** | [`knowledge/config-management.md`](./knowledge/config-management.md) — SecretRef, `.gitignore`, `$include` | `openclaw-config-portable` (export ligero, sin secretos) |
 | **Importar una config a otro OpenClaw ya existente** | [`knowledge/config-management.md`](./knowledge/config-management.md) + `HANDOFF.md` generado por el export | `openclaw-config-import` (detecta conflictos, pregunta, no aplica sin confirmar) |
 | **Mudar toda la instancia a otra máquina** (DR / mudanza total, con secretos) | [`knowledge/moving-openclaw.md`](./knowledge/moving-openclaw.md) — opción (A) | — (usar `openclaw backup create --verify`, no los skills ligeros) |
+| **Exportar/replicar/verificar toda la flota como código** (8 agentes, crons, plugins, allowlist) | [`fleet/README.md`](./fleet/README.md) — formato, separación público/privado, limitaciones | `fleet/export.sh` → `fleet/bootstrap.sh` → `fleet/verify.sh` |
 | **Decidir local (Mac) vs VPS 24/7** | [`knowledge/local-vs-remote-gateway.md`](./knowledge/local-vs-remote-gateway.md) | — |
+| **Verificar que un agente quedó bien montado** / saber qué grupo es cuál | [`skills/openclaw-agent-verify`](./.claude/skills/openclaw-agent-verify/SKILL.md) + el mapa del equipo (teléfonos/JIDs) en `~/.openclaw/architect/mapa-equipo.md`, fuera del repo | `openclaw-agent-verify` |
 | **Depurar un agente que responde raro** (genérico, ignora instrucciones) | [`knowledge/depurar-agentes.md`](./knowledge/depurar-agentes.md) — dónde vive su comportamiento real, determinismo por código, verificar antes de concluir | — |
+| **Bajar el consumo de tokens / decidir qué modelo o agente hace cada tarea** | [`knowledge/optimizacion-tokens.md`](./knowledge/optimizacion-tokens.md) (informe + guardarraíles) · [`knowledge/patron-workers-delegacion.md`](./knowledge/patron-workers-delegacion.md) (matriz de enrutamiento, explorador, ACP/Orca, feedback WhatsApp) | `scripts/check-prompt-budget.sh`; skill `delegar-a-claude` (workspace de main) |
 | **Entender la arquitectura general** (capas, memoria, multi-agente) | [`knowledge/openclaw.md`](./knowledge/openclaw.md#arquitectura-en-3-capas) | — |
 | **Entender memoria, automatización (cron/hooks/standing orders), skills, seguridad** | [`knowledge/openclaw-features.md`](./knowledge/openclaw-features.md) | — |
 
@@ -103,6 +106,24 @@ Cómo los usuarios llevan OpenClaw de un lugar a otro → [`knowledge/moving-ope
 - **(C) Acceso remoto**: SSH tunnel, Tailscale serve/funnel, o nodos emparejados → se conectan al Gateway central, no lo mueven.
 - **(D) Despliegue VPS/cloud**: Gateway en servidor como fuente de verdad (DigitalOcean/Oracle/RPi/contenedor EasyRunner); loopback + SSH/Tailscale.
 - **Recomendación para clientes**: **D + B** (VPS 24/7 + config versionada) con acceso por Tailscale/SSH; la mudanza (A) queda como DR.
+
+### Flota como código (implementación de la opción B)
+
+`fleet/` automatiza la réplica → [`fleet/README.md`](./fleet/README.md):
+
+- **`fleet/export.sh --out <dir>`** — snapshot de la instancia viva (solo lectura): `fleet.json`
+  (config sin `auth`/`gateway`/credenciales), workspaces de cada agente, `crons.json`,
+  `plugins.json`, `channels.json` (solo política), `exec-approvals.json` (sin `socket.token`)
+  y `manifest.json`. Termina con un **escaneo de secretos** que falla si encuentra algo.
+- **`fleet/bootstrap.sh --fleet <dir>`** — aplica la flota a otra instancia vía
+  `openclaw config set --batch-file` (regla 4), re-enraizando los workspaces al state dir
+  destino; imprime `CHECKLIST.md` con los logins manuales que **no** viajan.
+- **`fleet/verify.sh --fleet <dir>`** — tabla OK/DIFF de flota vs instancia (agentes, modelos,
+  workspaces, bindings, sesión, crons, allowlist) + `scripts/check-prompt-budget.sh`.
+- **Separación público/privado**: la herramienta vive en este repo público; la exportación
+  (teléfonos, JIDs de grupo, mensajes de cron) va **siempre** a un repo privado aparte.
+- Límites conocidos: los logins (OAuth/API keys/sesión WhatsApp) no viajan; un número de
+  WhatsApp solo puede estar vivo en una instancia; `cron add` necesita gateway.
 
 ## 9. Local vs remoto: proyectos locales + config cómoda + 24/7
 

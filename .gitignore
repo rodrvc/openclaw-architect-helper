@@ -16,3 +16,7 @@ credentials/
 identity/
 devices/
 node_modules/
+
+# Datos de negocio/PII del equipo (teléfonos, JIDs de WhatsApp): viven en ~/.openclaw/architect/, nunca aquí
+**/mapa-equipo.md
+*.local.*
