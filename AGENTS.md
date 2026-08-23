@@ -80,6 +80,12 @@ Ver [`knowledge/patron-workers-delegacion.md`](./knowledge/patron-workers-delega
 6. **Cita la fuente** al agregar conocimiento nuevo a `knowledge/`. No inventes; verifica en la doc.
 7. **Revisa PII** (emails, teléfonos) antes de compartir/publicar cualquier cosa.
 
+## Dónde vamos (estado vivo)
+
+Antes de tocar la flota lee **[`issues/003-optimizacion-pendientes-decision.md`](./issues/003-optimizacion-pendientes-decision.md)**
+→ sección "Estado al …": qué está hecho, la regla operativa (exportar la flota al repo privado tras cada
+cambio) y el orden de lo que sigue. Es el único punto de continuidad entre sesiones; actualízalo al terminar.
+
 ## Al terminar una tarea
 
 - Si aprendiste algo nuevo de OpenClaw → agrégalo a `knowledge/` con su fuente.

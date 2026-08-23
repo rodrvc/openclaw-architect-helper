@@ -25,4 +25,25 @@ Origen: `knowledge/optimizacion-tokens.md` §2 (2026-08-22). Todo lo de abajo ti
 - Siguiente: crear `recordatorios` con `openclaw-agent-build`; grupo dev enlazado a ACP; `branding`; `investigador`.
 
 - [x] Principio "comunicarse con el proyecto, no vivir en él": cv y acuaria-branding con workspace propio; guardarraíl en el script. `feat/explorar-oferta` mergeado en rodrigo-career (`1837a25`, sin push) y allowlist de cv agregada; renombrar `acuaria-branding` → `branding` cuando se cree el grupo.
-- [ ] `fleet/` (flota como código: export.sh, bootstrap.sh, verify.sh, CHECKLIST.md) — aprobado en principio, por arrancar.
+- [x] `fleet/` hecho y probado en instancia aislada (verify 20/20 OK). Herramienta en este repo (`fleet/README.md`); la flota real en el repo PRIVADO `rodrvc/openclaw-fleet-rodrigo` (incluye `mapa-equipo.md`).
+
+## Estado al 2026-08-23 (leer esto primero para seguir)
+
+**Hecho:** flota 146 KB → 65 KB de arranque por llamada; modelos por tarea + fallback Gemini flash; workers mini;
+heartbeats 0m; resets por inactividad; pruning; `acpx` instalado y probado ida y vuelta; Lumen sin rol de
+arquitecto; sofia acotada; principio "agentes se comunican con los proyectos, no viven en ellos" aplicado a
+todos (cv y acuaria-branding con workspace propio; repos limpios de archivos de agente); `corfo` retirado y
+**`opportunity-finder` creado** (oportunidades para Acuaria Labs, lee el estado del repo bajo demanda, delega
+a Claude); explorador de `cv` mergeado + allowlist; `fleet/` + repo privado de la flota.
+
+**Regla operativa:** todo cambio en la instancia termina con `fleet/export.sh --out ~/projects/openclaw-fleet-rodrigo`
++ commit en ese repo, y `scripts/check-prompt-budget.sh` en verde. Crear agentes: skill `openclaw-agent-build`
+(bloque "Reglas de la flota"). Verificar: `openclaw-agent-verify`.
+
+**Siguiente, en orden (todos aprobados por Rodrigo en principio):**
+1. `recordatorios` (audios + cron + memoria de tareas; Rodrigo crea el grupo de WhatsApp primero).
+2. Grupo **dev** enlazado a ACP (`/acp spawn claude --bind here`) con un worktree real.
+3. Unificar **branding** (renombrar `acuaria-branding` → `branding`, 3 perfiles) cuando exista su grupo.
+4. `investigador` (trending tech, cron + explorador, flash/mini).
+5. Decisiones aún abiertas: dreaming (restart), ACP `approve-all` para que Claude escriba código, `adondepo` a mini.
+6. Medir el ahorro real tras el reset de Codex (27-08) con `openclaw status --usage`.
