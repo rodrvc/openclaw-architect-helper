@@ -51,6 +51,7 @@ Ver [`knowledge/patron-workers-delegacion.md`](./knowledge/patron-workers-delega
 | Conocer memoria/personalidad/automatización/skills | [`knowledge/openclaw-features.md`](./knowledge/openclaw-features.md) | — |
 | Versionar/mover config sin filtrar secretos | [`knowledge/config-management.md`](./knowledge/config-management.md) | skill `openclaw-config-portable` / `openclaw-config-import` |
 | Mover/replicar/desplegar la instancia | [`knowledge/moving-openclaw.md`](./knowledge/moving-openclaw.md) | — |
+| Exportar/replicar/verificar la flota completa como código | [`fleet/README.md`](./fleet/README.md) | `fleet/export.sh` · `fleet/bootstrap.sh` · `fleet/verify.sh` |
 | Decidir local vs VPS (proyectos locales vs 24/7) | [`knowledge/local-vs-remote-gateway.md`](./knowledge/local-vs-remote-gateway.md) | — |
 | Bajar tokens / elegir modelo y ejecutor por tarea | [`knowledge/optimizacion-tokens.md`](./knowledge/optimizacion-tokens.md) + [`knowledge/patron-workers-delegacion.md`](./knowledge/patron-workers-delegacion.md) | `scripts/check-prompt-budget.sh` |
 
